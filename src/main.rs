@@ -30,7 +30,12 @@ fn main() {
             let target = File::create([file_name, "_compressed"].join("")).unwrap();
             deflate::compress(&mut src, &target).unwrap();
         },
-        ("extract", _) => {println!("Extract")},
+        ("extract", Some(m)) => {
+            let file_name = m.value_of("INPUT").unwrap();
+            let mut src = File::open(file_name).unwrap();
+            let target = File::create([file_name, "_decompressed"].join("")).unwrap();
+            deflate::decompress(&mut src, &target).unwrap();
+        },
         _ => println!("Error")
     }
 }
