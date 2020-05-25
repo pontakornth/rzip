@@ -1,4 +1,8 @@
 use clap::{Arg,App,SubCommand};
+use std::io::prelude::*;
+use std::fs::File;
+mod algorithm;
+use algorithm::deflate;
 fn main() {
     let matches = App::new("R-Zip")
         .version("0.0.1")
@@ -20,7 +24,12 @@ fn main() {
         )
         .get_matches();
     match matches.subcommand() {
-        ("compress", _) => {println!("Compress")},
+        ("compress", Some(m)) => {
+            let file_name = m.value_of("INPUT").unwrap();
+            let mut src = File::open(file_name).unwrap();
+            let target = File::create([file_name, "_compressed"].join("")).unwrap();
+            deflate::compress(&mut src, &target).unwrap();
+        },
         ("extract", _) => {println!("Extract")},
         _ => println!("Error")
     }
