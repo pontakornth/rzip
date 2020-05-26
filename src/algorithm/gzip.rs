@@ -3,7 +3,7 @@ use flate2::Compression;
 use std::io;
 use std::io::prelude::*;
 use std::fs::File;
-use tar::Builder;
+use tar::{Builder, Archive};
 
 pub fn compress(src_path: &str,target_path: &str) -> io::Result<()> {
     let mut src = File::open(src_path)?;
@@ -23,9 +23,14 @@ pub fn compress(src_path: &str,target_path: &str) -> io::Result<()> {
 
 pub fn decompress(src_path: &str,target_path: &str) -> io::Result<()> {
     let mut src = File::open(src_path)?;
-    let target = File::create(target_path)?;
+    let temp_target = File::create("temp.tar")?;
     let mut data: Vec<u8> = vec![];
-    src.read_to_end(&mut data)?;
-    let mut decompressor = GzDecoder::new(target);
-    decompressor.write_all(&data)
+    {
+        src.read_to_end(&mut data)?;
+        let mut decompressor = GzDecoder::new(temp_target);
+        decompressor.write_all(&data)?;
+    }
+    let temp_target = File::open("temp.tar")?;
+    let mut archive = Archive::new(temp_target);
+    archive.unpack(target_path)
 }

@@ -30,7 +30,7 @@ fn main() {
         },
         ("extract", Some(m)) => {
             let file_name = m.value_of("INPUT").unwrap();
-            gzip::decompress(file_name, &[file_name,"._out"].join("")).unwrap();
+            gzip::decompress(file_name, &[file_name,"_out"].join("")).unwrap();
         },
         _ => println!("Error")
     }
