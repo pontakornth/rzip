@@ -3,25 +3,27 @@ use flate2::Compression;
 use std::io;
 use std::io::prelude::*;
 use std::fs::File;
+use std::path::Path;
 use tar::{Builder, Archive};
 
-pub fn compress(src_path: &str,target_path: &str) -> io::Result<()> {
+pub fn compress(src_path: &Path, target_path: &Path) -> io::Result<()> {
     let mut src = File::open(src_path)?;
-    let mut temp_target = File::create("temp")?;
+    let temp_target = File::create("temp.gz")?;
     let mut data: Vec<u8> = vec![];
     {
-        let mut builder = Builder::new(&mut temp_target);
-        builder.append_file(src_path, &mut src)?;
-        builder.finish()?;
+        src.read_to_end(&mut data)?;
+        let mut compressor = GzEncoder::new(temp_target, Compression::default());
+        compressor.write_all(&data)?;
     }
     let target = File::create(target_path)?;
-    let mut temp_target = File::open("temp")?;
+    let mut temp_target = File::open("temp.gz")?;
     temp_target.read_to_end(&mut data)?;
-    let mut compressor = GzEncoder::new(target, Compression::default());
-    compressor.write_all(&data)
+    let mut builder = Builder::new(target);
+    builder.append_file(src_path.file_name().unwrap(),&mut temp_target)?;
+    builder.finish()
 }
 
-pub fn decompress(src_path: &str,target_path: &str) -> io::Result<()> {
+pub fn decompress(src_path: &Path,target_path: &Path) -> io::Result<()> {
     let mut src = File::open(src_path)?;
     let temp_target = File::create("temp.tar")?;
     let mut data: Vec<u8> = vec![];

@@ -1,6 +1,7 @@
 use clap::{Arg,App,SubCommand};
 use std::io::prelude::*;
 use std::fs::File;
+use std::path::Path;
 mod algorithm;
 use algorithm::gzip;
 fn main() {
@@ -26,11 +27,17 @@ fn main() {
     match matches.subcommand() {
         ("compress", Some(m)) => {
             let file_name = m.value_of("INPUT").unwrap();
-            gzip::compress(file_name, &[file_name,".tar"].join("")).unwrap();
+            let file_path = Path::new(&file_name);
+            let target_path = Path::new("target.tar");
+
+            gzip::compress(file_path, target_path).unwrap();
+            println!("Jojo");
         },
         ("extract", Some(m)) => {
             let file_name = m.value_of("INPUT").unwrap();
-            gzip::decompress(file_name, &[file_name,"_out"].join("")).unwrap();
+            let file_path = Path::new(&file_name);
+            let target_path = Path::new("Target");
+            gzip::decompress(file_path, target_path).unwrap();
         },
         _ => println!("Error")
     }
